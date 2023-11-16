@@ -1,0 +1,114 @@
+#include <iostream>
+#include <map>
+#include <fstream>
+#include <Windows.h>
+#include <string>
+using namespace std;
+typedef pair<string, string> word;
+void Input(multimap<string, string>& dict)
+{
+    string str1, str2;
+    cout << "введите слово на англ -> ";
+    cin >> str1;
+    cout << "введите перевод -> ";
+    cin >> str2;
+    dict.insert(word(str1, str2));
+}
+void Print(multimap<string, string>& dict)
+{
+    for (auto ptr = dict.begin(); ptr != dict.end(); ptr++)
+    {
+        cout << ptr->first << " -> " << ptr->second << endl;
+    }
+}
+void SaveToFile(const multimap<string, string>& dict, const string& filename)
+{
+    ofstream file(filename);
+    if (file.is_open())
+    {
+        for (const auto& entry : dict)
+        {
+            file << entry.first << " -> " << entry.second << endl;
+        }
+        file.close();
+    }
+    else
+    {
+        cout << "Unable to open the file for writing." << endl;
+    }
+}
+void LoadFromFile(multimap<string, string>& dict, const string& filename)
+{
+    ifstream file(filename);
+    if (file.is_open())
+    {
+        string line;
+        while (getline(file, line))
+        {
+            size_t arrowPos = line.find(" -> ");
+            if (arrowPos != string::npos)
+            {
+                string key = line.substr(0, arrowPos);
+                string value = line.substr(arrowPos + 4);
+                dict.insert(word(key, value));
+            }
+        }
+        file.close();
+    }
+    else
+    {
+        cout << "Unable to open the file for reading." << endl;
+    }
+}
+int main()
+{
+    SetConsoleOutputCP(1251);
+    SetConsoleCP(1251);
+    multimap<string, string> dict;
+    int v;
+    string filename = "dictionary.txt";
+    LoadFromFile(dict, filename);
+    string str;
+    auto range = dict.equal_range(""); 
+    do
+    {
+        cout << "1. Add word\n2. Print All\n3. Find\n4. Save to File\n5. Exit\n -> ";
+        cin >> v;
+        switch (v)
+        {
+        case 1:
+            system("cls");
+            Input(dict);
+            break;
+        case 2:
+            system("cls");
+            Print(dict);
+            break;
+        case 3:
+            system("cls");
+            cout << "Enter word -> ";
+            cin >> str;
+            range = dict.equal_range(str);
+            if (range.first == dict.end())
+            {
+                cout << "Нет такого слова в словаре!!!! Ищите в другом месте!!!\n";
+            }
+            else
+            {
+                for (auto it = range.first; it != range.second; ++it)
+                {
+                    cout << it->second << endl;
+                }
+                cout << "Количество повторов: " << distance(range.first, range.second) << endl;
+            }
+            break;
+        case 4:
+            system("cls");
+            SaveToFile(dict, filename);
+            cout << "Словарь сохранен в файл " << filename << endl;
+            break;
+        }
+    } while (v != 5);
+    SaveToFile(dict, filename);
+    return 0;
+}
